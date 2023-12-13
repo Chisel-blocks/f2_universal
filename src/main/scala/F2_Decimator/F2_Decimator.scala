@@ -31,8 +31,8 @@ class F2_DecimatorCLK extends Bundle {
 }
 
 class F2_DecimatorCTRL(val resolution : Int, val gainBits: Int) extends Bundle {
-    val cic3derivscale = Input(UInt(gainBits.W))
-    val cic3derivshift = Input(UInt(log2Ceil(resolution).W))
+    val cic3integscale = Input(UInt(gainBits.W))
+    val cic3integshift = Input(UInt(log2Ceil(resolution).W))
     val reset_loop = Input(Bool())
     val hb1scale = Input(UInt(gainBits.W))
     val hb2scale = Input(UInt(gainBits.W))
@@ -41,8 +41,8 @@ class F2_DecimatorCTRL(val resolution : Int, val gainBits: Int) extends Bundle {
 }
 
 class F2_DecimatorIO(resolution: Int, gainBits: Int) extends Bundle {
-    val clock = new F2_InterpolatorCLK    
-    val control = new F2_InterpolatorCTRL(resolution=resolution,gainBits=gainBits)
+    val clock = new F2_DecimatorCLK    
+    val control = new F2_DecimatorCTRL(resolution=resolution,gainBits=gainBits)
     val in = new Bundle {
         val iptr_A = Input(DspComplex(SInt(resolution.W), SInt(resolution.W)))
     }
@@ -52,7 +52,7 @@ class F2_DecimatorIO(resolution: Int, gainBits: Int) extends Bundle {
 }
 
 class F2_Decimator(config: F2Config) extends Module {
-    val io = IO(new F2_InterpolatorIO(resolution=config.resolution, gainBits=config.gainBits))
+    val io = IO(new F2_DecimatorIO(resolution=config.resolution, gainBits=config.gainBits))
     val data_reso = config.resolution
     val calc_reso = config.resolution * 2
 
@@ -92,34 +92,34 @@ class F2_Decimator(config: F2Config) extends Module {
         new HB_Decimator(config=config.hb1_config)
     ))
 
-    val hb2 = withClockAndReset(io.clock.hb1clock_high, hb2reset)(Module( 
+    val hb2 = withClockAndReset(io.clock.hb2clock_low, hb2reset)(Module( 
         new HB_Decimator(config=config.hb2_config)
     ))
 
-    val hb3 = withClockAndReset(io.clock.hb2clock_high, hb3reset)(Module(
+    val hb3 = withClockAndReset(io.clock.hb3clock_low, hb3reset)(Module(
         new HB_Decimator(config=config.hb3_config)
     ))
 
-    val cic3 = withClockAndReset(io.clock.hb3clock_high, cic3reset)(Module(
+    val cic3 = withClockAndReset(io.clock.cic3clockslow, cic3reset)(Module(
         new CIC_Decimator(config=config.cic3_config)
     ))
 
     //Default is to bypass
-    cic3.io.clockslow   := io.clocks.cic3clockslow
-    cic3.io.integscale  := io.controls.cic3integscale
-    cic3.io.integshift  := io.controls.cic3integshift
-    hb1.io.clock_low    := io.clocks.hb1clock_low
-    hb1.io.scale        := io.controls.hb1scale
-    hb2.io.clock_low    := io.clocks.hb2clock_low
-    hb2.io.scale        := io.controls.hb2scale
-    hb3.io.clock_low    := io.clocks.hb3clock_low
-    hb3.io.scale        := io.controls.hb3scale
+    cic3.io.in.clockslow   := io.clock.cic3clockslow
+    cic3.io.in.integscale  := io.control.cic3integscale
+    cic3.io.in.integshift  := io.control.cic3integshift
+    hb1.io.in.clock_low    := io.clock.hb1clock_low
+    hb1.io.in.scale        := io.control.hb1scale
+    hb2.io.in.clock_low    := io.clock.hb2clock_low
+    hb2.io.in.scale        := io.control.hb2scale
+    hb3.io.in.clock_low    := io.clock.hb3clock_low
+    hb3.io.in.scale        := io.control.hb3scale
 
     cic3.io.in.iptr_A   := io.in.iptr_A
     hb1.io.in.iptr_A    := cic3.io.out.Z
     hb2.io.in.iptr_A    := hb1.io.out.Z
     hb3.io.in.iptr_A    := hb2.io.out.Z
-    io.out.Z            := withClock(io.clocks.hb3clock_low){RegNext(io.iptr_A) }
+    io.out.Z            := withClock(io.clock.hb3clock_low){RegNext(io.in.iptr_A) }
    
 
     //Modes
@@ -128,13 +128,13 @@ class F2_Decimator(config: F2Config) extends Module {
             hb1reset            := true.B
             hb2reset            := true.B
             hb3reset            := true.B
-            io.out.Z            := withClock(io.clocks.hb3clock_low){RegNext(io.in.iptr_A)}
+            io.out.Z            := withClock(io.clock.hb3clock_low){RegNext(io.in.iptr_A)}
         }.elsewhen(state === two){
             cic3reset           := true.B 
             hb1reset            := true.B
             hb2reset            := true.B
             hb3reset            := reset.asBool
-            hb3.io.in.iptr_A    := io.out.iptr_A
+            hb3.io.in.iptr_A    := io.in.iptr_A
             io.out.Z            := hb3.io.out.Z
         }.elsewhen(state === four){
             cic3reset           := true.B 
@@ -154,7 +154,7 @@ class F2_Decimator(config: F2Config) extends Module {
             hb3.io.in.iptr_A    := hb2.io.out.Z
             io.out.Z            := hb3.io.out.Z
         }.elsewhen(state === more){
-            cic3reset           := io.controls.reset_loop 
+            cic3reset           := io.control.reset_loop 
             hb1reset            := reset.asBool
             hb2reset            := reset.asBool
             hb3reset            := reset.asBool
@@ -218,10 +218,10 @@ trait OptionParser {
   // Default values for the command-line options
   val default_opts : Map[String, String] = Map(
     "f2config_file"->"f2-config.yml",
-    "hb1config_file"->"hb_interpolator/configs/hb1-config.yml",
-    "hb2config_file"->"hb_interpolator/configs/hb2-config.yml",
-    "hb3config_file"->"hb_interpolator/configs/hb3-config.yml",
-    "cic3config_file"->"cic_interpolator/configs/cic3-config.yml",
+    "hb1config_file"->"hb_decimator/configs/hb1-config.yml",
+    "hb2config_file"->"hb_decimator/configs/hb2-config.yml",
+    "hb3config_file"->"hb_decimator/configs/hb3-config.yml",
+    "cic3config_file"->"cic_decimator/configs/cic3-config.yml",
     "td"->"verilog/"
   )
 
