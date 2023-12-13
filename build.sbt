@@ -13,9 +13,9 @@ val chiselVersion = "3.5.1"
 
 resolvers += "A-Core Gitlab" at "https://gitlab.com/api/v4/groups/13348068/-/packages/maven"
 
-lazy val FIR = (project in file("."))
+lazy val F2_Decimator = (project in file("."))
   .settings(
-    name := "FIR",
+    name := "F2_Decimator",
     libraryDependencies ++= Seq(
       "edu.berkeley.cs" %% "chisel3" % chiselVersion,
       "edu.berkeley.cs" %% "dsptools" % "1.5.6",
@@ -38,3 +38,7 @@ def gitSubmoduleHashSnapshotVersion(submod: String): String = {
     val shellcommand =  "git submodule status | grep %s | awk '{print substr($1,0,7)}'".format(submod)
     scala.sys.process.Process(Seq("/bin/sh", "-c", shellcommand )).!!.mkString.replaceAll("\\s", "")+"-SNAPSHOT"
 }
+// Put your git-version controlled snapshots here
+// libraryDependencies += "Chisel-blocks" %% "someblock" % gitSubmoduleHashSnapshotVersion("someblock")
+libraryDependencies += "Chisel-blocks" %% "hb_decimator" % gitSubmoduleHashSnapshotVersion("hb_decimator")
+libraryDependencies += "Chisel-blocks" %% "cic_decimator" % gitSubmoduleHashSnapshotVersion("cic_decimator")
