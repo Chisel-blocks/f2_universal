@@ -42,10 +42,10 @@ SCALAPATH=${ROOTPATH}/src/main/scala
 FIRRTL_JAR="$ROOTPATH/rocket-chip/firrtl/utils/bin/firrtl.jar"
 
 VPATHDIRS=`find ${SCALAPATH}/* -type d -exec basename '{}' ';'`
-MAINMODULE="FIR"
+MAINMODULE="F2_Decimator"
 MODULES=""
 TEST_MODULES=""
-PACKAGE="fir"
+PACKAGE="f2_decimator"
 
 
 ############################# MAKEFILE   ####################################
@@ -75,10 +75,14 @@ TEST_TARGETS = \$(foreach name,\$(TEST_MODULES), test_\$(name))
 SBT=sbt -J-Xmx16G -J-Xss8M
 
 # Default parameters
-config_file ?= "fir-config.yml"
-td ?= "verilog/"
+f2config_file ?= "f2-config.yml"
+hb1config_file ?= "hb_interpolator/configs/hb1-config.yml"
+hb2config_file ?= "hb_interpolator/configs/hb2-config.yml"
+hb3config_file ?= "hb_interpolator/configs/hb3-config.yml"
+cic3config_file ?= "cic_interpolator/configs/cic3-config.yml"
+td ?= "\$(VERILOGDIR)/"
 
-MAINPARAMS = -config_file \$(config_file) -td \$(td)
+MAINPARAMS = -f2config_file \$(f2config_file) -hb1config_file \$(hb1config_file) -hb2config_file \$(hb2config_file) -hb3config_file \$(hb3config_file) -cic3config_file \$(cic3config_file) -td \$(td)
 
 
 
