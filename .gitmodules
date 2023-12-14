@@ -1,6 +1,6 @@
 [submodule "hb_decimator"]
 	path = hb_decimator
-	url = git@gitlab.com:a-core/a-core_chisel/hb_decimator.git
+	url = git@github.com:Chisel-blocks/halfband.git
 [submodule "cic_decimator"]
 	path = cic_decimator
-	url = git@gitlab.com:a-core/a-core_chisel/cic_decimator.git
+	url = git@github.com:Chisel-blocks/cic3.git
