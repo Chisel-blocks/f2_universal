@@ -2,8 +2,6 @@
 package f2_decimator
 import config._
 import config.{F2Config}
-import hb_decimator.config.{HbConfig}
-import cic_decimator.config.{CicConfig}
 
 import java.io.File
 
