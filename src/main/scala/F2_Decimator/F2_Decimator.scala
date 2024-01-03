@@ -88,20 +88,20 @@ class F2_Decimator(config: F2Config) extends Module {
     val cic3reset = Wire(Bool())
     cic3reset := io.control.reset_loop
     
-    val hb1 = withClockAndReset(io.clock.hb1clock_low, hb1reset)(Module( 
+    val cic3 = withReset( cic3reset)(Module(
+        new CIC_Decimator(config=config.cic3_config)
+    ))
+
+    val hb1 = withClockAndReset(io.clock.cic3clockslow, hb1reset)(Module( 
         new HB_Decimator(config=config.hb1_config)
     ))
 
-    val hb2 = withClockAndReset(io.clock.hb2clock_low, hb2reset)(Module( 
+    val hb2 = withClockAndReset(io.clock.hb1clock_low, hb2reset)(Module( 
         new HB_Decimator(config=config.hb2_config)
     ))
 
-    val hb3 = withClockAndReset(io.clock.hb3clock_low, hb3reset)(Module(
+    val hb3 = withClockAndReset(io.clock.hb2clock_low, hb3reset)(Module(
         new HB_Decimator(config=config.hb3_config)
-    ))
-
-    val cic3 = withClockAndReset(io.clock.cic3clockslow, cic3reset)(Module(
-        new CIC_Decimator(config=config.cic3_config)
     ))
 
     //Default is to bypass
