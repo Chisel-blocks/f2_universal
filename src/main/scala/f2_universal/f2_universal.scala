@@ -62,24 +62,28 @@ class f2_universal(config: f2Config) extends Module {
     cic3reset := io.control.reset_loop
     
     val cic3 = withClockAndReset(io.clock.cic3, cic3reset)(Module(
-        new CIC_Universal(config=config.cic3_config)
+        new cic_universal(config=config.cic3_config)
     ))
 
     val hb1 = withClockAndReset(io.clock.hb1, hb1reset)(Module( 
-        new HB_Universal(config=config.hb1_config)
+        new hb_universal(config=config.hb1_config)
     ))
 
     val hb2 = withClockAndReset(io.clock.hb2, hb2reset)(Module( 
-        new HB_Universal(config=config.hb2_config)
+        new hb_universal(config=config.hb2_config)
     ))
 
     val hb3 = withClockAndReset(io.clock.hb3, hb3reset)(Module(
-        new HB_Universal(config=config.hb3_config)
+        new hb_universal(config=config.hb3_config)
     ))
 
     //Default is to bypass
-    cic3.io.in.scale       := io.control.cic3scale
-    cic3.io.in.shift       := io.control.cic3shift
+
+    cic3.io.control.convmode    := io.control.convmode
+    cic3.io.control.scale       := io.control.cic3scale
+    cic3.io.control.reset_clk   := io.control.reset_clk    
+    cic3.io.control.scale       := io.control.cic3scale
+    cic3.io.control.shift       := io.control.cic3shift
     hb1.io.in.scale        := io.control.hb1scale
     hb2.io.in.scale        := io.control.hb2scale
     hb3.io.in.scale        := io.control.hb3scale

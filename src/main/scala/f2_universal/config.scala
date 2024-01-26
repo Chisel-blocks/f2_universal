@@ -8,8 +8,8 @@ import scala.math.BigInt
 import scala.io.Source
 import chisel3._
 
-import hb_universal.config.{HbConfig}
-import cic_universal.config.{CicConfig}
+import hb_universal.config.{hbConfig}
+import cic_universal.config.{cicConfig}
 
 case class f2Generic(
   syntax_version:     Option[Int], // None for scala instantiation
@@ -21,10 +21,10 @@ case class f2Config(
   syntax_version:     Option[Int], // None for scala instantiation
   resolution:         Int,
   gainBits:           Int,
-  hb1_config:         HbConfig,
-  hb2_config:         HbConfig,
-  hb3_config:         HbConfig,
-  cic3_config:        CicConfig
+  hb1_config:         hbConfig,
+  hb2_config:         hbConfig,
+  hb3_config:         hbConfig,
+  cic3_config:        cicConfig
 )
 
 object f2Config {
@@ -96,12 +96,12 @@ object f2Config {
       case Right(err) => return Right(err)
     }
 
-    var hb1_config: Option[HbConfig] = None
-    var hb2_config: Option[HbConfig] = None
-    var hb3_config: Option[HbConfig] = None
-    var cic3_config: Option[CicConfig] = None
+    var hb1_config: Option[hbConfig] = None
+    var hb2_config: Option[hbConfig] = None
+    var hb3_config: Option[hbConfig] = None
+    var cic3_config: Option[cicConfig] = None
 
-    HbConfig.loadFromFile(hb1_file) match {
+    hbConfig.loadFromFile(hb1_file) match {
         case Left(config) => {
             hb1_config = Some(config)
         }
@@ -111,7 +111,7 @@ object f2Config {
         }
     }
 
-    HbConfig.loadFromFile(hb2_file) match {
+    hbConfig.loadFromFile(hb2_file) match {
         case Left(config) => {
             hb2_config = Some(config)
         }
@@ -121,7 +121,7 @@ object f2Config {
         }
     }
 
-    HbConfig.loadFromFile(hb3_file) match {
+    hbConfig.loadFromFile(hb3_file) match {
         case Left(config) => {
             hb3_config = Some(config)
         }
@@ -131,7 +131,7 @@ object f2Config {
         }
     }
 
-    CicConfig.loadFromFile(cic3_file) match {
+    cicConfig.loadFromFile(cic3_file) match {
         case Left(config) => {
             cic3_config = Some(config)
         }
