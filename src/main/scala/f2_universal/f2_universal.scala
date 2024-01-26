@@ -27,11 +27,18 @@ class f2_universalCLK extends Bundle {
 class f2_universalCTRL(val resolution : Int, val gainBits: Int) extends Bundle {
     val cic3scale = Input(UInt(gainBits.W))
     val cic3shift = Input(UInt(log2Ceil(resolution).W))
+    val cic3Ndiv = Input(UInt(8.W))
     val reset_loop = Input(Bool())
     val reset_clk = Input(Bool())
     val hb1scale = Input(UInt(gainBits.W))
+    val hb1output_switch = Input(UInt(1.W))
+    val hb1enable_clk_div = Input(UInt(1.W))
     val hb2scale = Input(UInt(gainBits.W))
+    val hb2output_switch = Input(UInt(1.W))
+    val hb2enable_clk_div = Input(UInt(1.W))
     val hb3scale = Input(UInt(gainBits.W))
+    val hb3output_switch = Input(UInt(1.W))
+    val hb3enable_clk_div = Input(UInt(1.W))
     val mode = Input(UInt(3.W))
     val convmode = Input(UInt(1.W))
 }
@@ -88,18 +95,18 @@ class f2_universal(config: f2Config) extends Module {
     hb3.io.control.scale        := io.control.hb3scale    
     cic3.io.control.scale       := io.control.cic3scale
 
-    hb1.io.control.output_switch  := 1.U(1.W)
-    hb1.io.control.enable_clk_div := 1.U(1.W)
+    hb1.io.control.output_switch  := io.control.hb1output_switch
+    hb1.io.control.enable_clk_div := io.control.hb1enable_clk_div
 
-    hb2.io.control.output_switch  := 1.U(1.W)
-    hb2.io.control.enable_clk_div := 1.U(1.W)
+    hb2.io.control.output_switch  := io.control.hb2output_switch
+    hb2.io.control.enable_clk_div := io.control.hb2enable_clk_div
 
-    hb3.io.control.output_switch  := 1.U(1.W)
-    hb3.io.control.enable_clk_div := 1.U(1.W)
+    hb3.io.control.output_switch  := io.control.hb3output_switch
+    hb3.io.control.enable_clk_div := io.control.hb3enable_clk_div
 
     cic3.io.control.shift       := io.control.cic3shift
     cic3.io.control.reset_clk   := io.control.reset_clk
-    cic3.io.control.Ndiv        := 2.U(8.W)
+    cic3.io.control.Ndiv        := io.control.cic3Ndiv
 
     //Default is to bypass
     hb1.io.in.iptr_A    := cic3.io.out.Z
