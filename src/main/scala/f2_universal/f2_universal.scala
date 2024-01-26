@@ -1,7 +1,7 @@
 // Finitie impulse filter
 package f2_universal
 import config._
-import config.{F2Config}
+import config.{f2Config}
 
 import java.io.File
 
@@ -46,7 +46,7 @@ class f2_universalIO(resolution: Int, gainBits: Int) extends Bundle {
     }
 }
 
-class f2_universal(config: F2Config) extends Module {
+class f2_universal(config: f2Config) extends Module {
     val io = IO(new f2_universalIO(resolution=config.resolution, gainBits=config.gainBits))
     val data_reso = config.resolution
     val calc_reso = config.resolution * 2
@@ -154,9 +154,9 @@ object f2_universal extends App with OptionParser {
     val cic3config_file = options("cic3config_file")
     val target_dir = options("td")
 
-    var f2_config: Option[F2Config] = None
+    var f2_config: Option[f2Config] = None
 
-    F2Config.loadFromFile(
+    f2Config.loadFromFile(
         f2config_file, 
         hb1config_file, 
         hb2config_file, 
@@ -166,7 +166,7 @@ object f2_universal extends App with OptionParser {
             f2_config = Some(config)
         }
         case Right(err) => {
-            System.err.println(s"\nCould not load F2 configuration from file:\n${err.msg}")
+            System.err.println(s"\nCould not load f2 configuration from file:\n${err.msg}")
             System.exit(-1)
         }
     }

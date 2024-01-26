@@ -42,7 +42,7 @@ SCALAPATH=${ROOTPATH}/src/main/scala
 FIRRTL_JAR="$ROOTPATH/rocket-chip/firrtl/utils/bin/firrtl.jar"
 
 VPATHDIRS=`find ${SCALAPATH}/* -type d -exec basename '{}' ';'`
-MAINMODULE="F2_Universal"
+MAINMODULE="f2_universal"
 MODULES=""
 TEST_MODULES=""
 PACKAGE="f2_universal"
