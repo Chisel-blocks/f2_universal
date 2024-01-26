@@ -11,13 +11,13 @@ import chisel3._
 import hb_universal.config.{HbConfig}
 import cic_universal.config.{CicConfig}
 
-case class F2Generic(
+case class f2Generic(
   syntax_version:     Option[Int], // None for scala instantiation
   resolution:         Int,
   gainBits:           Int
 )
 
-case class F2Config(
+case class f2Config(
   syntax_version:     Option[Int], // None for scala instantiation
   resolution:         Int,
   gainBits:           Int,
@@ -27,19 +27,19 @@ case class F2Config(
   cic3_config:        CicConfig
 )
 
-object F2Config {
-  implicit val f2GenericFormat = yamlFormat3(F2Generic)
+object f2Config {
+  implicit val f2GenericFormat = yamlFormat3(f2Generic)
 
   // TODO: Update this to always match the major version number of the release
   val syntaxVersion = 2
 
   /** Exception type for FIR config parsing errors */
-  class F2ConfigParseException(msg: String) extends Exception(msg)
+  class f2ConfigParseException(msg: String) extends Exception(msg)
 
   /** Type for representing error return values from a function */
   case class Error(msg: String) {
     /** Throw a parsing exception with a debug message. */
-    def except() = { throw new F2ConfigParseException(msg) }
+    def except() = { throw new f2ConfigParseException(msg) }
 
     /** Abort program execution and print out the reason */
     def panic() = {
@@ -71,7 +71,7 @@ object F2Config {
     hb2_file: String, 
     hb3_file: String, 
     cic3_file: String
-    ): Either[F2Config, Error] = {
+    ): Either[f2Config, Error] = {
 
     println(s"\nLoading f2 configuration from file: $f2_file")
     var f2_fileString: String = ""
@@ -88,9 +88,9 @@ object F2Config {
     //println(s"```\n$fileString\n```")
 
     // Determine syntax version
-    val F2yamlAst = f2_fileString.parseYaml
+    val f2yamlAst = f2_fileString.parseYaml
 
-    val syntaxVersion = parseSyntaxVersion(F2yamlAst)
+    val syntaxVersion = parseSyntaxVersion(f2yamlAst)
     syntaxVersion match {
       case Left(value) => ()
       case Right(err) => return Right(err)
@@ -106,7 +106,7 @@ object F2Config {
             hb1_config = Some(config)
         }
         case Right(err) => {
-            System.err.println(s"\nCould not load F2 hb1 configuration from file:\n${err.msg}")
+            System.err.println(s"\nCould not load f2 hb1 configuration from file:\n${err.msg}")
             System.exit(-1)
         }
     }
@@ -116,7 +116,7 @@ object F2Config {
             hb2_config = Some(config)
         }
         case Right(err) => {
-            System.err.println(s"\nCould not load F2 hb2 configuration from file:\n${err.msg}")
+            System.err.println(s"\nCould not load f2 hb2 configuration from file:\n${err.msg}")
             System.exit(-1)
         }
     }
@@ -126,7 +126,7 @@ object F2Config {
             hb3_config = Some(config)
         }
         case Right(err) => {
-            System.err.println(s"\nCould not load F2 hb3 configuration from file:\n${err.msg}")
+            System.err.println(s"\nCould not load f2 hb3 configuration from file:\n${err.msg}")
             System.exit(-1)
         }
     }
@@ -136,15 +136,15 @@ object F2Config {
             cic3_config = Some(config)
         }
         case Right(err) => {
-            System.err.println(s"\nCould not load F2 cic3 configuration from file:\n${err.msg}")
+            System.err.println(s"\nCould not load f2 cic3 configuration from file:\n${err.msg}")
             System.exit(-1)
         }
     }
 
     // Parse FirConfig from YAML AST
-    val f2_config = F2yamlAst.convertTo[F2Generic]
+    val f2_config = f2yamlAst.convertTo[f2Generic]
 
-    val config = new F2Config(
+    val config = new f2Config(
 	    f2_config.syntax_version, 
 	    f2_config.resolution, 
 	    f2_config.gainBits,

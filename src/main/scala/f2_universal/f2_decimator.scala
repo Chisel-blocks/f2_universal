@@ -17,14 +17,14 @@ import dsptools.numbers.DspComplex
 import hb_universal._
 import cic_universal._
 
-class F2_UniversalCLK extends Bundle {
+class f2_universalCLK extends Bundle {
     val cic3   = Input(Clock())
     val hb1    = Input(Clock())
     val hb2    = Input(Clock())
     val hb3    = Input(Clock())
 }
 
-class F2_UniversalCTRL(val resolution : Int, val gainBits: Int) extends Bundle {
+class f2_universalCTRL(val resolution : Int, val gainBits: Int) extends Bundle {
     val cic3scale = Input(UInt(gainBits.W))
     val cic3shift = Input(UInt(log2Ceil(resolution).W))
     val reset_loop = Input(Bool())
@@ -35,9 +35,9 @@ class F2_UniversalCTRL(val resolution : Int, val gainBits: Int) extends Bundle {
     val convmode = Input(UInt(1.W))
 }
 
-class F2_UniversalIO(resolution: Int, gainBits: Int) extends Bundle {
-    val clock = new F2_UniversalCLK    
-    val control = new F2_UniversalCTRL(resolution=resolution,gainBits=gainBits)
+class f2_universalIO(resolution: Int, gainBits: Int) extends Bundle {
+    val clock = new f2_universalCLK    
+    val control = new f2_universalCTRL(resolution=resolution,gainBits=gainBits)
     val in = new Bundle {
         val iptr_A = Input(DspComplex(SInt(resolution.W), SInt(resolution.W)))
     }
@@ -46,8 +46,8 @@ class F2_UniversalIO(resolution: Int, gainBits: Int) extends Bundle {
     }
 }
 
-class F2_Universal(config: F2Config) extends Module {
-    val io = IO(new F2_UniversalIO(resolution=config.resolution, gainBits=config.gainBits))
+class f2_universal(config: F2Config) extends Module {
+    val io = IO(new f2_universalIO(resolution=config.resolution, gainBits=config.gainBits))
     val data_reso = config.resolution
     val calc_reso = config.resolution * 2
     
@@ -142,7 +142,7 @@ class F2_Universal(config: F2Config) extends Module {
 
 
 /** Generates verilog or sv*/
-object F2_Universal extends App with OptionParser {
+object f2_universal extends App with OptionParser {
     // Parse command-line arguments
     val (options, arguments) = getopts(default_opts, args.toList)
     printopts(options, arguments)
@@ -172,9 +172,9 @@ object F2_Universal extends App with OptionParser {
     }
 
     // Generate verilog
-    val annos = Seq(ChiselGeneratorAnnotation(() => new F2_Universal(config=f2_config.get)))
+    val annos = Seq(ChiselGeneratorAnnotation(() => new f2_universal(config=f2_config.get)))
     val sysverilog = (new ChiselStage).emitSystemVerilog(
-        new F2_Universal(config=f2_config.get),
+        new f2_universal(config=f2_config.get),
      
     //args
     Array("--target-dir", target_dir))
