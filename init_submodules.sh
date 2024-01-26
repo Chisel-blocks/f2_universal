@@ -3,8 +3,8 @@
 #Written by by Marko Kosunen, marko.kosunen@aalto.fi, 2017
 DIR=$( cd `dirname $0` && pwd )
 SUBMODULES="\
-    ./cic_decimator \
-    ./hb_decimator
+    ./cic_universal \
+    ./hb_universal
 "
 
 git submodule sync

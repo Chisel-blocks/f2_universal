@@ -42,10 +42,10 @@ SCALAPATH=${ROOTPATH}/src/main/scala
 FIRRTL_JAR="$ROOTPATH/rocket-chip/firrtl/utils/bin/firrtl.jar"
 
 VPATHDIRS=`find ${SCALAPATH}/* -type d -exec basename '{}' ';'`
-MAINMODULE="F2_Decimator"
+MAINMODULE="F2_Universal"
 MODULES=""
 TEST_MODULES=""
-PACKAGE="f2_decimator"
+PACKAGE="f2_universal"
 
 
 ############################# MAKEFILE   ####################################

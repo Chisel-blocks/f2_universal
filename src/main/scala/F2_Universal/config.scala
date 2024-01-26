@@ -1,6 +1,6 @@
 // See LICENSE_AALTO.txt for license details
 
-package f2_decimator.config
+package f2_universal.config
 
 import net.jcazevedo.moultingyaml._
 import net.jcazevedo.moultingyaml.DefaultYamlProtocol._
@@ -8,8 +8,8 @@ import scala.math.BigInt
 import scala.io.Source
 import chisel3._
 
-import hb_decimator.config.{HbConfig}
-import cic_decimator.config.{CicConfig}
+import hb_universal.config.{HbConfig}
+import cic_universal.config.{CicConfig}
 
 case class F2Generic(
   syntax_version:     Option[Int], // None for scala instantiation
