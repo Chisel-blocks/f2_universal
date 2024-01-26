@@ -28,6 +28,7 @@ class f2_universalCTRL(val resolution : Int, val gainBits: Int) extends Bundle {
     val cic3scale = Input(UInt(gainBits.W))
     val cic3shift = Input(UInt(log2Ceil(resolution).W))
     val reset_loop = Input(Bool())
+    val reset_clk = Input(Bool())
     val hb1scale = Input(UInt(gainBits.W))
     val hb2scale = Input(UInt(gainBits.W))
     val hb3scale = Input(UInt(gainBits.W))
@@ -61,10 +62,6 @@ class f2_universal(config: f2Config) extends Module {
     hb3reset := reset.asBool
     cic3reset := io.control.reset_loop
     
-    val cic3 = withClockAndReset(io.clock.cic3, cic3reset)(Module(
-        new cic_universal(config=config.cic3_config)
-    ))
-
     val hb1 = withClockAndReset(io.clock.hb1, hb1reset)(Module( 
         new hb_universal(config=config.hb1_config)
     ))
@@ -77,21 +74,39 @@ class f2_universal(config: f2Config) extends Module {
         new hb_universal(config=config.hb3_config)
     ))
 
-    //Default is to bypass
+    val cic3 = withClockAndReset(io.clock.cic3, cic3reset)(Module(
+        new cic_universal(config=config.cic3_config)
+    ))
 
+    hb1.io.control.convmode     := io.control.convmode
+    hb2.io.control.convmode     := io.control.convmode
+    hb3.io.control.convmode     := io.control.convmode
     cic3.io.control.convmode    := io.control.convmode
-    cic3.io.control.scale       := io.control.cic3scale
-    cic3.io.control.reset_clk   := io.control.reset_clk    
-    cic3.io.control.scale       := io.control.cic3scale
-    cic3.io.control.shift       := io.control.cic3shift
-    hb1.io.in.scale        := io.control.hb1scale
-    hb2.io.in.scale        := io.control.hb2scale
-    hb3.io.in.scale        := io.control.hb3scale
 
-    cic3.io.in.iptr_A   := io.in.iptr_A
+    hb1.io.control.scale        := io.control.hb1scale
+    hb2.io.control.scale        := io.control.hb2scale
+    hb3.io.control.scale        := io.control.hb3scale    
+    cic3.io.control.scale       := io.control.cic3scale
+
+    hb1.io.control.output_switch  := 1.U(1.W)
+    hb1.io.control.enable_clk_div := 1.U(1.W)
+
+    hb2.io.control.output_switch  := 1.U(1.W)
+    hb2.io.control.enable_clk_div := 1.U(1.W)
+
+    hb3.io.control.output_switch  := 1.U(1.W)
+    hb3.io.control.enable_clk_div := 1.U(1.W)
+
+    cic3.io.control.shift       := io.control.cic3shift
+    cic3.io.control.reset_clk   := io.control.reset_clk
+    cic3.io.control.Ndiv        := 2.U(8.W)
+
+    //Default is to bypass
     hb1.io.in.iptr_A    := cic3.io.out.Z
     hb2.io.in.iptr_A    := hb1.io.out.Z
     hb3.io.in.iptr_A    := hb2.io.out.Z
+    cic3.io.in.iptr_A   := io.in.iptr_A
+
     io.out.Z            := withClock(io.clock.cic3){RegNext(io.in.iptr_A) }
    
     //Decoder for the modes
