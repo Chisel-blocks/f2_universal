@@ -96,6 +96,15 @@ object f2Config {
       case Right(err) => return Right(err)
     }
 
+    // Parse FirConfig from YAML AST
+    val f2_config = f2yamlAst.convertTo[f2Generic]
+
+    println("resolution:")
+    println(f2_config.resolution)
+
+    println("gainBits:")
+    println(f2_config.gainBits)
+
     var hb1_config: Option[hbConfig] = None
     var hb2_config: Option[hbConfig] = None
     var hb3_config: Option[hbConfig] = None
@@ -141,9 +150,6 @@ object f2Config {
         }
     }
 
-    // Parse FirConfig from YAML AST
-    val f2_config = f2yamlAst.convertTo[f2Generic]
-
     val config = new f2Config(
 	    f2_config.syntax_version, 
 	    f2_config.resolution, 
@@ -153,12 +159,6 @@ object f2Config {
         hb3_config.get,
         cic3_config.get
     )
-
-    println("resolution:")
-    println(config.resolution)
-
-    println("gainBits:")
-    println(config.gainBits)
 
     Left(config)
   }
