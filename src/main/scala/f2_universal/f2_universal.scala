@@ -28,6 +28,7 @@ class f2_universalCTRL(val resolution : Int, val gainBits: Int) extends Bundle {
     val cic3scale = Input(UInt(gainBits.W))
     val cic3shift = Input(UInt(log2Ceil(resolution).W))
     val cic3Ndiv = Input(UInt(8.W))
+    val cic3enable_clk_div = Input(UInt(1.W))
     val reset_loop = Input(Bool())
     val reset_clk = Input(Bool())
     val hb1scale = Input(UInt(gainBits.W))
@@ -104,9 +105,10 @@ class f2_universal(config: f2Config) extends Module {
     hb3.io.control.output_switch  := io.control.hb3output_switch
     hb3.io.control.enable_clk_div := io.control.hb3enable_clk_div
 
-    cic3.io.control.shift       := io.control.cic3shift
-    cic3.io.control.reset_clk   := io.control.reset_clk
-    cic3.io.control.Ndiv        := io.control.cic3Ndiv
+    cic3.io.control.shift         := io.control.cic3shift
+    cic3.io.control.reset_clk     := io.control.reset_clk
+    cic3.io.control.Ndiv          := io.control.cic3Ndiv
+    cic3.io.control.cic_en_clkdiv := io.control.cic3enable_clk_div
 
     //Default is to bypass
     hb1.io.in.iptr_A    := cic3.io.out.Z
