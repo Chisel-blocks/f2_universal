@@ -44,5 +44,3 @@ def gitSubmoduleHashSnapshotVersion(submod: String): String = {
 }
 // Put your git-version controlled snapshots here
 // libraryDependencies += "Chisel-blocks" %% "someblock" % gitSubmoduleHashSnapshotVersion("someblock")
-libraryDependencies += "Chisel-blocks" %% "hb_universal" % gitSubmoduleHashSnapshotVersion("hb_universal")
-libraryDependencies += "Chisel-blocks" %% "cic_universal" % gitSubmoduleHashSnapshotVersion("cic_universal")
