@@ -13,6 +13,9 @@ val chiselVersion = "3.5.1"
 
 resolvers += "A-Core Gitlab" at "https://gitlab.com/api/v4/groups/13348068/-/packages/maven"
 
+lazy val hb_universal = (project in file("hb_universal"))
+lazy val cic_universal = (project in file("cic_universal"))
+
 lazy val f2_universal = (project in file("."))
   .settings(
     name := "f2_universal",
@@ -31,6 +34,7 @@ lazy val f2_universal = (project in file("."))
     ),
     addCompilerPlugin("edu.berkeley.cs" % "chisel3-plugin" % chiselVersion cross CrossVersion.full)
   )
+  .dependsOn(hb_universal, cic_universal)
 
 // Parse the version of a submodle from the git submodule status
 // for those modules not version controlled by Maven or equivalent
