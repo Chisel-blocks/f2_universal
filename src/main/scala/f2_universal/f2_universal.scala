@@ -59,6 +59,10 @@ class f2_universal(config: f2Config) extends Module {
     val data_reso = config.resolution
     val calc_reso = config.resolution * 2
     
+    val state = RegInit(5.U(3.W))
+
+    state :=  io.control.mode
+
     //Reset initializations
     val hb1reset = Wire(Bool())
     val hb2reset = Wire(Bool())
@@ -67,7 +71,7 @@ class f2_universal(config: f2Config) extends Module {
     hb1reset := reset.asBool
     hb2reset := reset.asBool
     hb3reset := reset.asBool
-    cic3reset := io.control.reset_loop
+    cic3reset := reset.asBool
     
     val hb1 = withClockAndReset(io.clock.hb1, hb1reset)(Module( 
         new hb_universal(config=config.hb1_config)
@@ -104,7 +108,7 @@ class f2_universal(config: f2Config) extends Module {
     hb3.io.control.output_switch  := io.control.hb3output_switch
     hb3.io.control.enable_clk_div := io.control.hb3enable_clk_div
 
-    cic3.io.control.reset_clk     := io.control.reset_clk
+    cic3.io.control.reset_loop    := io.control.reset_loop
     cic3.io.control.Ndiv          := io.control.cic3Ndiv
     cic3.io.control.cic_en_clkdiv := io.control.cic3enable_clk_div
 
@@ -117,8 +121,8 @@ class f2_universal(config: f2Config) extends Module {
     io.out.Z            := withClock(io.clock.cic3){RegNext(io.in.iptr_A) }
    
     //Decoder for the modes
-    when(io.control.convmode ===1.U){
-        when(io.control.mode === 1.U) { //Two
+    when(io.control.convmode === 1.U){
+        when(state === 1.U) { //Two
             cic3reset           := true.B 
             hb1reset            := reset.asBool
             hb2reset            := true.B
@@ -126,7 +130,7 @@ class f2_universal(config: f2Config) extends Module {
 
             hb1.io.in.iptr_A    := io.in.iptr_A
             io.out.Z            := hb1.io.out.Z
-        } .elsewhen(io.control.mode === 2.U) { //Four
+        } .elsewhen(state === 2.U) { //Four
             cic3reset           := true.B 
             hb1reset            := reset.asBool
             hb2reset            := reset.asBool
@@ -135,18 +139,18 @@ class f2_universal(config: f2Config) extends Module {
             hb2.io.in.iptr_A    := io.in.iptr_A
             hb1.io.in.iptr_A    := hb2.io.out.Z
             io.out.Z            := hb1.io.out.Z
-        } .elsewhen(io.control.mode === 3.U) { //Eight
-            cic3reset          := true.B
-            hb1reset           := reset.asBool 
-            hb2reset           := reset.asBool
+        } .elsewhen(state === 3.U) { //Eight
+            cic3reset           := true.B
+            hb1reset            := reset.asBool 
+            hb2reset            := reset.asBool
             hb3reset            := reset.asBool
 
             hb3.io.in.iptr_A    := io.in.iptr_A
             hb2.io.in.iptr_A    := hb3.io.out.Z
             hb1.io.in.iptr_A    := hb2.io.out.Z
             io.out.Z            := hb1.io.out.Z
-        } .elsewhen(io.control.mode === 4.U) { //More
-            cic3reset           := io.control.reset_loop 
+        } .elsewhen(state === 4.U) { //More
+            cic3reset           := reset.asBool
             hb1reset            := reset.asBool
             hb2reset            := reset.asBool
             hb3reset            := reset.asBool
@@ -156,6 +160,18 @@ class f2_universal(config: f2Config) extends Module {
             hb2.io.in.iptr_A    := hb3.io.out.Z
             hb1.io.in.iptr_A    := hb2.io.out.Z
             io.out.Z            := hb1.io.out.Z
+        } .elsewhen(state === 5.U) { //Init
+            cic3reset           := reset.asBool
+            hb1reset            := reset.asBool
+            hb2reset            := reset.asBool
+            hb3reset            := reset.asBool
+
+            cic3.io.in.iptr_A   := io.in.iptr_A
+            hb3.io.in.iptr_A    := cic3.io.out.Z
+            hb2.io.in.iptr_A    := hb3.io.out.Z
+            hb1.io.in.iptr_A    := hb2.io.out.Z
+
+            io.out.Z            := withClock(io.clock.cic3){RegNext(io.in.iptr_A)}
         }.otherwise { //Bypass
             cic3reset           := true.B 
             hb1reset            := true.B
@@ -165,7 +181,7 @@ class f2_universal(config: f2Config) extends Module {
             io.out.Z            := withClock(io.clock.cic3){RegNext(io.in.iptr_A)}
         }
       }.otherwise {
-        when(io.control.mode === 1.U) { //Two
+        when(state === 1.U) { //Two
             cic3reset           := true.B 
             hb1reset            := reset.asBool
             hb2reset            := true.B
@@ -173,7 +189,7 @@ class f2_universal(config: f2Config) extends Module {
 
             hb1.io.in.iptr_A    := io.in.iptr_A
             io.out.Z            := hb1.io.out.Z
-        } .elsewhen(io.control.mode === 2.U) { //Four
+        } .elsewhen(state === 2.U) { //Four
             cic3reset           := true.B 
             hb1reset            := reset.asBool
             hb2reset            := reset.asBool
@@ -182,28 +198,40 @@ class f2_universal(config: f2Config) extends Module {
             hb1.io.in.iptr_A    := io.in.iptr_A
             hb2.io.in.iptr_A    := hb1.io.out.Z
             io.out.Z            := hb2.io.out.Z
-        } .elsewhen(io.control.mode === 3.U) { //Eight
-            cic3reset          := true.B
-            hb1reset           := reset.asBool 
-            hb2reset           := reset.asBool
+        } .elsewhen(state === 3.U) { //Eight
+            cic3reset           := true.B
+            hb1reset            := reset.asBool 
+            hb2reset            := reset.asBool
             hb3reset            := reset.asBool
 
             hb1.io.in.iptr_A    := io.in.iptr_A
             hb2.io.in.iptr_A    := hb1.io.out.Z
             hb3.io.in.iptr_A    := hb2.io.out.Z
             io.out.Z            := hb3.io.out.Z
-        } .elsewhen(io.control.mode === 4.U) { //More
-            cic3reset           := io.control.reset_loop 
+        } .elsewhen(state === 4.U) { //More
+            cic3reset           := reset.asBool
             hb1reset            := reset.asBool
             hb2reset            := reset.asBool
             hb3reset            := reset.asBool
 
-            hb1.io.in.iptr_A   := io.in.iptr_A
+            hb1.io.in.iptr_A    := io.in.iptr_A
             hb2.io.in.iptr_A    := hb1.io.out.Z
             hb3.io.in.iptr_A    := hb2.io.out.Z
-            cic3.io.in.iptr_A    := hb3.io.out.Z
+            cic3.io.in.iptr_A   := hb3.io.out.Z
             io.out.Z            := cic3.io.out.Z
-        }.otherwise { //Bypass
+        } .elsewhen(state === 5.U) { //Init
+            cic3reset           := reset.asBool
+            hb1reset            := reset.asBool
+            hb2reset            := reset.asBool
+            hb3reset            := reset.asBool
+
+            cic3.io.in.iptr_A   := io.in.iptr_A
+            hb3.io.in.iptr_A    := cic3.io.out.Z
+            hb2.io.in.iptr_A    := hb3.io.out.Z
+            hb1.io.in.iptr_A    := hb2.io.out.Z
+
+            io.out.Z            := withClock(io.clock.cic3){RegNext(io.in.iptr_A)}
+        } .otherwise { //Bypass
             cic3reset           := true.B 
             hb1reset            := true.B
             hb2reset            := true.B
