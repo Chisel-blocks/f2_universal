@@ -18,27 +18,22 @@ import hb_universal._
 import cic_universal._
 
 class f2_universalCLK extends Bundle {
-    val cic3   = Input(Clock())
-    val hb1    = Input(Clock())
-    val hb2    = Input(Clock())
-    val hb3    = Input(Clock())
+    val pn   = Input(Clock())
+    val p2n    = Input(Clock())
+    val p4n    = Input(Clock())
+    val p8n    = Input(Clock())
 }
 
 class f2_universalCTRL(val resolution : Int, val gainBits: Int) extends Bundle {
     val cic3scale = Input(UInt(gainBits.W))
-    val cic3Ndiv = Input(UInt(8.W))
-    val cic3enable_clk_div = Input(UInt(1.W))
     val reset_loop = Input(Bool())
     val reset_clk = Input(Bool())
     val hb1scale = Input(UInt(gainBits.W))
     val hb1output_switch = Input(UInt(1.W))
-    val hb1enable_clk_div = Input(UInt(1.W))
     val hb2scale = Input(UInt(gainBits.W))
     val hb2output_switch = Input(UInt(1.W))
-    val hb2enable_clk_div = Input(UInt(1.W))
     val hb3scale = Input(UInt(gainBits.W))
     val hb3output_switch = Input(UInt(1.W))
-    val hb3enable_clk_div = Input(UInt(1.W))
     val mode = Input(UInt(3.W))
     val convmode = Input(UInt(1.W))
 }
@@ -73,21 +68,28 @@ class f2_universal(config: f2Config) extends Module {
     hb3reset := reset.asBool
     cic3reset := reset.asBool
     
-    val hb1 = withClockAndReset(io.clock.hb1, hb1reset)(Module( 
+    val hb1 = withClockAndReset(io.clock.p4n, hb1reset)(Module( 
         new hb_universal(config=config.hb1_config)
     ))
 
-    val hb2 = withClockAndReset(io.clock.hb2, hb2reset)(Module( 
+    val hb2 = withClockAndReset(io.clock.p2n, hb2reset)(Module( 
         new hb_universal(config=config.hb2_config)
     ))
 
-    val hb3 = withClockAndReset(io.clock.hb3, hb3reset)(Module(
+    val hb3 = withClockAndReset(io.clock.pn, hb3reset)(Module(
         new hb_universal(config=config.hb3_config)
     ))
 
-    val cic3 = withClockAndReset(io.clock.cic3, cic3reset)(Module(
+    val cic3 = withClockAndReset(clock, cic3reset)(Module(
         new cic_universal(config=config.cic3_config)
     ))
+
+    hb1.io.clock.slow  := io.clock.p8n
+    hb2.io.clock.slow  := io.clock.p4n
+    hb3.io.clock.slow  := io.clock.p2n
+    cic3.io.clock.slow  := io.clock.pn
+
+
 
     hb1.io.control.convmode     := io.control.convmode
     hb2.io.control.convmode     := io.control.convmode
@@ -100,17 +102,12 @@ class f2_universal(config: f2Config) extends Module {
     cic3.io.control.scale       := io.control.cic3scale
 
     hb1.io.control.output_switch  := io.control.hb1output_switch
-    hb1.io.control.enable_clk_div := io.control.hb1enable_clk_div
 
     hb2.io.control.output_switch  := io.control.hb2output_switch
-    hb2.io.control.enable_clk_div := io.control.hb2enable_clk_div
 
     hb3.io.control.output_switch  := io.control.hb3output_switch
-    hb3.io.control.enable_clk_div := io.control.hb3enable_clk_div
 
     cic3.io.control.reset_loop    := io.control.reset_loop
-    cic3.io.control.Ndiv          := io.control.cic3Ndiv
-    cic3.io.control.cic_en_clkdiv := io.control.cic3enable_clk_div
 
     //Default is to bypass
     hb1.io.in.iptr_A    := cic3.io.out.Z
@@ -118,7 +115,7 @@ class f2_universal(config: f2Config) extends Module {
     hb3.io.in.iptr_A    := hb2.io.out.Z
     cic3.io.in.iptr_A   := io.in.iptr_A
 
-    io.out.Z            := withClock(io.clock.cic3){RegNext(io.in.iptr_A) }
+    io.out.Z            :=RegNext(io.in.iptr_A) 
    
     //Decoder for the modes
     when(io.control.convmode === 1.U){
@@ -171,14 +168,14 @@ class f2_universal(config: f2Config) extends Module {
             hb2.io.in.iptr_A    := hb3.io.out.Z
             hb1.io.in.iptr_A    := hb2.io.out.Z
 
-            io.out.Z            := withClock(io.clock.cic3){RegNext(io.in.iptr_A)}
+            io.out.Z            := RegNext(io.in.iptr_A)
         }.otherwise { //Bypass
             cic3reset           := true.B 
             hb1reset            := true.B
             hb2reset            := true.B
             hb3reset            := true.B
 
-            io.out.Z            := withClock(io.clock.cic3){RegNext(io.in.iptr_A)}
+            io.out.Z            := RegNext(io.in.iptr_A)
         }
       }.otherwise {
         when(state === 1.U) { //Two
@@ -230,14 +227,14 @@ class f2_universal(config: f2Config) extends Module {
             hb2.io.in.iptr_A    := hb3.io.out.Z
             hb1.io.in.iptr_A    := hb2.io.out.Z
 
-            io.out.Z            := withClock(io.clock.cic3){RegNext(io.in.iptr_A)}
+            io.out.Z            := RegNext(io.in.iptr_A)
         } .otherwise { //Bypass
             cic3reset           := true.B 
             hb1reset            := true.B
             hb2reset            := true.B
             hb3reset            := true.B
 
-            io.out.Z            := withClock(io.clock.cic3){RegNext(io.in.iptr_A)}
+            io.out.Z            := RegNext(io.in.iptr_A)
         }
 
       }
