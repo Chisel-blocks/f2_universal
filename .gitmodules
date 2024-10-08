@@ -1,6 +1,6 @@
 [submodule "hb_universal"]
 	path = hb_universal
-	url = git@bubba.ecdl.hut.fi:a-core/a-core_chisel/hb_universal.git
+	url = git@github.com:Chisel-blocks/hb_universal.git
 [submodule "cic_universal"]
 	path = cic_universal
-	url = git@bubba.ecdl.hut.fi:a-core/a-core_chisel/cic_universal.git
+	url = git@github.com:Chisel-blocks/cic_universal.git
